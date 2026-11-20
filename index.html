@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Kartoi CRM</title>
+<style>
+:root { color-scheme: light; --bg:#faf9f5; --fg:#1a1a19; --mut:#6b6a64; --line:#e7e6df; --line2:#efeee8; --card:#fff; --soft:#f4f3ee;
+  --acc:#185fa5; --accbg:#eef2f8; --ok:#1d6b45; --okbg:#e7f4ec; --warn:#993c1d; --warnbg:#fdf0e6; --bad:#a32d2d; --badbg:#fdf0f0; }
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--fg); margin: 0; font-size: 14.5px; line-height: 1.45; }
+a { color: var(--acc); text-decoration: none; } a:hover { text-decoration: underline; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; border: 1px solid var(--line); background: var(--card); border-radius: 8px; padding: 6px 12px; }
+button:hover { background: var(--soft); }
+button.pri { background: var(--fg); color: #fff; border-color: var(--fg); } button.pri:hover { background: #333; }
+button.danger { color: var(--bad); border-color: #e9c9c9; }
+button.sm { padding: 3px 9px; font-size: 13px; }
+input, select, textarea { border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; background: #fff; width: 100%; }
+textarea { min-height: 80px; resize: vertical; }
+header { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bottom: 1px solid var(--line); }
+.hwrap { max-width: 1280px; margin: 0 auto; padding: 10px 20px; display: flex; align-items: center; gap: 18px; }
+.brand { font-weight: 700; font-size: 16px; white-space: nowrap; }
+nav { display: flex; gap: 4px; flex: 1; }
+nav a { padding: 6px 12px; border-radius: 8px; color: var(--mut); font-weight: 500; }
+nav a.on { background: var(--card); color: var(--fg); border: 1px solid var(--line); }
+nav a:hover { text-decoration: none; color: var(--fg); }
+.who { font-size: 13px; color: var(--mut); white-space: nowrap; }
+main { max-width: 1280px; margin: 0 auto; padding: 18px 20px 90px; }
+h1 { font-size: 21px; font-weight: 600; margin: 0; }
+h2 { font-size: 15px; font-weight: 600; margin: 0 0 8px; }
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 14px; }
+.bar .grow { flex: 1; }
+.bar select, .bar input { width: auto; }
+.sub { color: var(--mut); font-size: 13px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin: 0 0 16px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; }
+.card .l { font-size: 12px; color: var(--mut); } .card .v { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.panel { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin-bottom: 14px; }
+.panel h2 { display: flex; justify-content: space-between; align-items: center; }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; background: #fff; }
+.tbl { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+th { text-align: left; font-weight: 600; font-size: 12px; color: var(--mut); padding: 8px 10px; background: var(--soft); white-space: nowrap; }
+td { padding: 8px 10px; border-top: 1px solid var(--line2); vertical-align: top; }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+tr.click { cursor: pointer; } tr.click:hover td { background: #fbfbf8; }
+.pill { display: inline-block; font-size: 11.5px; padding: 1px 9px; border-radius: 10px; background: #f1efe8; color: #5f5e5a; white-space: nowrap; }
+.pill.cliente { background: var(--okbg); color: var(--ok); } .pill.en_contacto { background: var(--accbg); color: var(--acc); }
+.pill.calificado { background: #f3eefb; color: #5b3a99; } .pill.blacklist { background: var(--badbg); color: var(--bad); font-weight: 600; }
+.pill.descartado { background: #f1f1f1; color: #888; }
+.mut { color: var(--mut); } .bad { color: var(--bad); } .ok { color: var(--ok); }
+.empty { color: var(--mut); font-size: 13px; padding: 10px 0; }
+/* pipeline */
+.board { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; align-items: flex-start; }
+.col { flex: 0 0 250px; background: var(--soft); border-radius: 10px; padding: 8px; min-height: 120px; }
+.col.drop { outline: 2px dashed var(--acc); }
+.col h3 { font-size: 13px; margin: 2px 4px 2px; display: flex; justify-content: space-between; gap: 6px; }
+.col .tot { font-size: 12px; color: var(--mut); margin: 0 4px 8px; font-variant-numeric: tabular-nums; }
+.deal { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; margin-bottom: 6px; cursor: grab; }
+.deal:hover { border-color: #cfcdc4; }
+.deal .t { font-weight: 600; font-size: 13.5px; } .deal .c { font-size: 12.5px; color: var(--mut); }
+.deal .m { display: flex; justify-content: space-between; font-size: 12px; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.deal.late .m .f { color: var(--bad); }
+/* empresa */
+.grid2 { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 14px; }
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; font-size: 13.5px; }
+.kv .k { color: var(--mut); }
+.banner { background: var(--badbg); color: var(--bad); border: 1px solid #efcaca; border-radius: 10px; padding: 10px 14px; font-weight: 600; margin-bottom: 14px; }
+.logbar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.tl { list-style: none; margin: 0; padding: 0; }
+.tl li { border-left: 2px solid var(--line); padding: 2px 0 12px 12px; position: relative; }
+.tl li::before { content: ""; position: absolute; left: -5px; top: 7px; width: 8px; height: 8px; border-radius: 50%; background: #cfcdc4; }
+.tl .h { font-size: 12.5px; color: var(--mut); } .tl .r { font-weight: 600; } .tl .b { white-space: pre-wrap; font-size: 13.5px; margin-top: 2px; }
+.row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; padding: 7px 0; border-top: 1px solid var(--line2); }
+.row:first-child { border-top: 0; }
+.links a { margin-right: 10px; font-size: 13px; white-space: nowrap; }
+.task { display: flex; gap: 8px; align-items: flex-start; padding: 6px 0; border-top: 1px solid var(--line2); }
+.task:first-child { border-top: 0; }
+.task input { width: auto; margin-top: 3px; }
+.task.done .tt { text-decoration: line-through; color: var(--mut); }
+.late { color: var(--bad); }
+/* modal */
+.ov { position: fixed; inset: 0; background: rgba(20,20,18,.35); z-index: 50; display: flex; align-items: flex-start; justify-content: center; padding: 6vh 12px; overflow-y: auto; }
+.modal { background: #fff; border-radius: 12px; width: 100%; max-width: 560px; padding: 18px; box-shadow: 0 10px 40px rgba(0,0,0,.15); }
+.modal h2 { font-size: 17px; margin-bottom: 12px; }
+.fg { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; }
+.fg .full { grid-column: 1 / -1; }
+.fg label { font-size: 12px; color: var(--mut); display: block; margin-bottom: 3px; }
+.mact { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; } .mact .grow { flex: 1; }
+.warnbox { background: var(--warnbg); color: var(--warn); border-radius: 8px; padding: 8px 10px; font-size: 13px; margin-top: 10px; }
+.picker { position: relative; }
+.picker .res { position: absolute; left: 0; right: 0; top: 100%; background: #fff; border: 1px solid var(--line); border-radius: 8px; z-index: 5; max-height: 240px; overflow-y: auto; box-shadow: 0 6px 20px rgba(0,0,0,.08); }
+.picker .res div { padding: 7px 10px; cursor: pointer; font-size: 13.5px; } .picker .res div:hover { background: var(--soft); }
+#toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--fg); color: #fff; padding: 8px 16px; border-radius: 8px; font-size: 13.5px; z-index: 60; display: none; }
+#toast.err { background: var(--bad); }
+.login { max-width: 380px; margin: 12vh auto; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 24px; }
+.login h1 { margin-bottom: 4px; } .login p { color: var(--mut); font-size: 13.5px; }
+.login input { margin: 6px 0 10px; }
+.login button { width: 100%; }
+.mobnav { display: none; }
+@media (max-width: 760px) {
+  .hwrap nav { display: none; }
+  .mobnav { display: flex; position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid var(--line); z-index: 30; }
+  .mobnav a { flex: 1; text-align: center; padding: 10px 0 12px; font-size: 12.5px; color: var(--mut); }
+  .mobnav a.on { color: var(--fg); font-weight: 600; }
+  main { padding: 14px 16px 90px; }
+  .grid2, .fg { grid-template-columns: 1fr; }
+  .col { flex-basis: 78vw; }
+  .hide-m { display: none; }
+}
+</style>
+</head>
+<body>
+<header id="hdr" style="display:none">
+  <div class="hwrap">
+    <div class="brand">Kartoi CRM</div>
+    <nav id="nav"></nav>
+    <div class="who" id="who"></div>
+  </div>
+</header>
+<main id="app"><div class="empty">Cargando…</div></main>
+<div class="mobnav" id="mobnav" style="display:none"></div>
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script>
+"use strict";
+// ───────────────────────── setup ─────────────────────────
+const CFG = window.CRM_CONFIG;
+const sb = supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
+const S = { me: null, users: [], stages: [], route: "" };
+const $ = (s, el = document) => el.querySelector(s);
+const app = $("#app");
+const CANALES = [["llamada", "Llamada"], ["whatsapp", "WhatsApp"], ["visita", "Visita"], ["email", "Email"], ["reunion", "Reunión"], ["nota", "Nota"]];
+const ESTATUS = [["cliente", "Cliente"], ["en_contacto", "En contacto"], ["calificado", "Calificado"], ["nuevo", "Nuevo"], ["descartado", "Descartado"], ["blacklist", "Blacklist"]];
+const NAV = [["pipeline", "Pipeline"], ["empresas", "Empresas"], ["tareas", "Tareas"], ["actividad", "Actividad"]];
+const MES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+
+function esc(v) { return String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+function hoy() { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10); }
+function addDays(iso, n) { const d = new Date(iso + "T12:00:00"); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); }
+function fmtF(iso) { if (!iso) return ""; const [y, m, d] = iso.slice(0, 10).split("-"); return `${+d}-${MES[+m - 1]}-${y}`; }
+function money(n) { if (n == null || n === "") return "—"; n = +n; const a = Math.abs(n);
+  if (a >= 1e6) return "$" + (n / 1e6).toFixed(a >= 1e7 ? 1 : 2).replace(/\.?0+$/, "") + "M";
+  if (a >= 1e3) return "$" + Math.round(n / 1e3) + "K"; return "$" + Math.round(n); }
+function estPill(e) { const l = (ESTATUS.find(x => x[0] === e) || [e, e || "—"])[1]; return `<span class="pill ${esc(e)}">${esc(l)}</span>`; }
+function canalL(c) { return (CANALES.find(x => x[0] === c) || [c, c || ""])[1]; }
+function cuerpoSinResultado(a) { // notas importadas: la 1ª línea del cuerpo ya es el resultado
+  let b = (a.cuerpo || "").trim(); const r = (a.resultado || "").trim();
+  if (r && b.startsWith(r)) b = b.slice(r.length).trim();
+  return b; }
+function nombreEmp(c) { return c ? (c.nombre_comercial || c.razon_social) : "—"; }
+function waLink(t) { let d = String(t || "").replace(/\D/g, ""); if (!d) return ""; if (d.length === 10) d = "52" + d; return "https://wa.me/" + d; }
+function telLink(t) { const d = String(t || "").replace(/[^\d+]/g, ""); return d ? "tel:" + d : ""; }
+function toast(msg, err) { const t = $("#toast"); t.textContent = msg; t.className = err ? "err" : ""; t.style.display = "block"; clearTimeout(t._h); t._h = setTimeout(() => t.style.display = "none", err ? 6000 : 2200); }
+function ownerOpts(sel, todos) { return (todos ? `<option value="">${todos}</option>` : `<option value="">—</option>`) + S.users.map(u => `<option ${u.nombre === sel ? "selected" : ""}>${esc(u.nombre)}</option>`).join(""); }
+async function q(p) { const { data, error, count } = await p; if (error) { toast(error.message, true); throw error; } return count != null && data == null ? count : data; }
+function debounce(fn, ms) { let h; return (...a) => { clearTimeout(h); h = setTimeout(() => fn(...a), ms); }; }
+function downloadCSV(name, rows) {
+  const csv = rows.map(r => r.map(v => { v = String(v ?? ""); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }).join(",")).join("\n");
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv" })); a.download = name; a.click();
+}
+
+// ───────────────────────── auth ─────────────────────────
+function loginView(msg) {
+  $("#hdr").style.display = "none"; $("#mobnav").style.display = "none";
+  app.innerHTML = `<div class="login"><h1>Kartoi CRM</h1><p>Entra con tu correo de Kartoi. Te llega un enlace y un código.</p>
+    ${msg ? `<div class="warnbox">${esc(msg)}</div>` : ""}
+    <form id="f1"><input id="em" type="email" placeholder="tu@kartoi.mx" required autocomplete="email"><button class="pri">Enviar acceso</button></form>
+    <form id="f2" style="display:none"><p>Revisa tu correo: abre el enlace, o escribe aquí el código.</p>
+      <input id="otp" inputmode="numeric" autocomplete="one-time-code" placeholder="Código" required><button class="pri">Entrar</button>
+      <p><a href="#" id="otra">Usar otro correo</a></p></form></div>`;
+  $("#f1").onsubmit = async e => { e.preventDefault(); const email = $("#em").value.trim().toLowerCase();
+    const btn = e.target.querySelector("button"); btn.disabled = true; btn.textContent = "Enviando…";
+    const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: location.origin + location.pathname } });
+    btn.disabled = false; btn.textContent = "Enviar acceso";
+    if (error) return toast(/signups|not allowed|not found/i.test(error.message) ? "Ese correo no está dado de alta. Pídele acceso a Santiago." : error.message, true);
+    $("#f1").style.display = "none"; $("#f2").style.display = "block"; $("#otp").focus(); };
+  $("#f2").onsubmit = async e => { e.preventDefault();
+    const { error } = await sb.auth.verifyOtp({ email: $("#em").value.trim().toLowerCase(), token: $("#otp").value.trim(), type: "email" });
+    if (error) return toast("Código inválido o vencido", true); };
+  $("#otra").onclick = e => { e.preventDefault(); loginView(); };
+}
+
+async function boot(session) {
+  if (!session) return loginView();
+  const me = await sb.rpc("crm_me");
+  if (me.error || !me.data || !me.data.email) { await sb.auth.signOut(); return loginView("Tu correo no tiene acceso al CRM. Pídele a Santiago que te dé de alta."); }
+  S.me = me.data;
+  [S.users, S.stages] = await Promise.all([
+    q(sb.from("crm_users").select("email,nombre,rol").eq("activo", true).order("nombre")),
+    q(sb.from("pipeline_stages").select("*").order("orden")),
+  ]);
+  $("#hdr").style.display = ""; $("#mobnav").style.display = "";
+  $("#who").innerHTML = `${esc(S.me.nombre)} · <a href="#" id="salir">Salir</a>`;
+  $("#salir").onclick = async e => { e.preventDefault(); await sb.auth.signOut(); };
+  if (!location.hash.startsWith("#/")) location.hash = "#/pipeline"; else route();
+}
+let booted = null;
+sb.auth.onAuthStateChange((ev, session) => {
+  if (ev === "SIGNED_OUT") { booted = null; S.me = null; return loginView(); }
+  if (ev === "TOKEN_REFRESHED" || ev === "USER_UPDATED") return;
+  const uid = session?.user?.id || null;
+  if (uid === booted && uid) return;
+  booted = uid; setTimeout(() => boot(session), 0); // fuera del callback (recomendación supabase-js)
+});
+window.addEventListener("hashchange", () => S.me && route());
+
+// ───────────────────────── router ─────────────────────────
+function route() {
+  const [, view, id] = location.hash.split("/");
+  S.route = view;
+  const navHtml = NAV.map(([k, l]) => `<a href="#/${k}" class="${k === view || (view === "empresa" && k === "empresas") ? "on" : ""}">${l}</a>`).join("");
+  $("#nav").innerHTML = navHtml; $("#mobnav").innerHTML = navHtml;
+  app.innerHTML = `<div class="empty">Cargando…</div>`;
+  ({ pipeline: vPipeline, empresas: vEmpresas, empresa: () => vEmpresa(id), tareas: vTareas, actividad: vActividad }[view] || vPipeline)()
+    .catch(e => { console.error(e); app.innerHTML = `<div class="banner">Error: ${esc(e.message || e)}</div>`; });
+}
+
+// ───────────────────────── modal / formularios ─────────────────────────
+// fields: [{k, l, t:'text|num|date|select|area|company|check', opts:[[v,l]], full, req}]
+function modal(title, fields, vals, onSave, extra = {}) {
+  const ov = document.createElement("div"); ov.className = "ov";
+  const f = fields.map(fd => {
+    const v = vals[fd.k] ?? fd.def ?? ""; const id = "fm_" + fd.k; let inp;
+    if (fd.t === "select") inp = `<select id="${id}">${fd.opts.map(([ov2, ol]) => `<option value="${esc(ov2)}" ${String(ov2) === String(v) ? "selected" : ""}>${esc(ol)}</option>`).join("")}</select>`;
+    else if (fd.t === "area") inp = `<textarea id="${id}">${esc(v)}</textarea>`;
+    else if (fd.t === "company") inp = `<div class="picker"><input id="${id}_q" placeholder="Buscar empresa…" value="${esc(vals[fd.k + "_label"] || "")}" autocomplete="off"><input type="hidden" id="${id}" value="${esc(v)}"><div class="res" style="display:none"></div></div>`;
+    else inp = `<input id="${id}" type="${fd.t === "num" ? "number" : fd.t === "date" ? "date" : fd.t === "email" ? "email" : "text"}" value="${esc(v)}" ${fd.t === "num" ? 'step="any"' : ""}>`;
+    return `<div class="${fd.full ? "full" : ""}"><label for="${id}">${esc(fd.l)}${fd.req ? " *" : ""}</label>${inp}</div>`;
+  }).join("");
+  ov.innerHTML = `<div class="modal"><h2>${esc(title)}</h2><form><div class="fg">${f}</div><div class="msg"></div>
+    <div class="mact">${extra.onDelete ? `<button type="button" class="danger del">Borrar</button>` : ""}<span class="grow"></span>
+    <button type="button" class="cancel">Cancelar</button><button class="pri">Guardar</button></div></form></div>`;
+  document.body.appendChild(ov);
+  const close = () => ov.remove();
+  ov.addEventListener("mousedown", e => { if (e.target === ov) close(); });
+  $(".cancel", ov).onclick = close;
+  if (extra.onDelete) $(".del", ov).onclick = async () => { if (confirm("¿Borrar definitivamente?")) { await extra.onDelete(); close(); } };
+  fields.filter(fd => fd.t === "company").forEach(fd => companyPicker($(`#fm_${fd.k}_q`, ov), $(`#fm_${fd.k}`, ov), fd.onPick));
+  if (extra.onInput) extra.onInput(ov);
+  $("form", ov).onsubmit = async e => {
+    e.preventDefault();
+    const out = {};
+    for (const fd of fields) {
+      let v = $(`#fm_${fd.k}`, ov).value.trim();
+      if (fd.req && !v) return toast(`Falta: ${fd.l}`, true);
+      if (fd.t === "num") v = v === "" ? null : +v;
+      else if (v === "") v = null;
+      out[fd.k] = v;
+    }
+    const btn = $("button.pri", ov); btn.disabled = true;
+    try { await onSave(out); close(); } catch (err) { btn.disabled = false; if (err && err.message) toast(err.message, true); }
+  };
+  setTimeout(() => { const first = $("input:not([type=hidden]),select,textarea", ov); first && first.focus(); }, 30);
+  return ov;
+}
+
+function companyPicker(inp, hidden, onPick) {
+  const res = inp.parentElement.querySelector(".res");
+  const search = debounce(async () => {
+    const t = inp.value.trim(); if (t.length < 2) { res.style.display = "none"; return; }
+    const rows = await q(sb.from("companies").select("id,razon_social,nombre_comercial,estatus,municipio")
+      .or(`razon_social.ilike.%${t.replace(/[%,()]/g, " ")}%,nombre_comercial.ilike.%${t.replace(/[%,()]/g, " ")}%`)
+      .order("estatus").limit(10));
+    res.innerHTML = rows.length ? rows.map(r => `<div data-id="${r.id}" data-l="${esc(nombreEmp(r))}">${esc(nombreEmp(r))} ${estPill(r.estatus)} <span class="mut">${esc(r.municipio || "")}</span></div>`).join("") : `<div class="mut">Sin resultados</div>`;
+    res.style.display = "block";
+  }, 250);
+  inp.addEventListener("input", () => { hidden.value = ""; search(); });
+  res.addEventListener("mousedown", e => { const d = e.target.closest("[data-id]"); if (!d) return;
+    hidden.value = d.dataset.id; inp.value = d.dataset.l; res.style.display = "none"; onPick && onPick(d.dataset.id); });
+  inp.addEventListener("blur", () => setTimeout(() => res.style.display = "none", 150));
+}
+
+const stageOpts = () => S.stages.filter(s => s.activo).map(s => [s.id, s.nombre]);
+
+function dealForm(deal = {}, after) {
+  const fields = [
+    { k: "nombre", l: "Nombre del negocio", req: true, full: true },
+    ...(deal.company_id ? [] : [{ k: "company_id", l: "Empresa", t: "company", full: true }]),
+    { k: "stage_id", l: "Etapa", t: "select", opts: stageOpts(), def: stageOpts()[0]?.[0] },
+    { k: "monto", l: "Monto (MXN / año)", t: "num" },
+    { k: "owner", l: "Responsable", t: "select", opts: [["", "—"], ...S.users.map(u => [u.nombre, u.nombre])], def: S.me.nombre },
+    { k: "fecha_cierre", l: "Cierre esperado", t: "date" },
+    { k: "tipo", l: "Tipo", t: "select", opts: [["nuevo", "Cliente nuevo"], ["win_back", "Win-back"], ["expansion", "Expansión (cliente actual)"]] },
+    { k: "fuente", l: "Fuente", t: "select", opts: [["", "—"], ["hotlist", "Hotlist / prospección"], ["referido", "Referido"], ["web", "Web / redes"], ["feria", "Feria / evento"], ["comisionista", "Comisionista"], ["cliente", "Cliente actual"], ["hubspot", "HubSpot"]] },
+    { k: "motivo_perdida", l: "Motivo de pérdida (si se perdió)", full: true },
+    { k: "notas", l: "Notas", t: "area", full: true },
+  ];
+  modal(deal.id ? "Editar negocio" : "Nuevo negocio", fields, deal, async v => {
+    if (!deal.id && !v.company_id && !deal.company_id) throw new Error("Elige la empresa");
+    v.stage_id = +v.stage_id;
+    if (deal.id) await q(sb.from("deals").update(v).eq("id", deal.id));
+    else await q(sb.from("deals").insert({ ...v, company_id: v.company_id || deal.company_id, created_by: S.me.nombre }));
+    toast("Negocio guardado"); after && after();
+  }, deal.id ? { onDelete: async () => { await q(sb.from("deals").delete().eq("id", deal.id)); toast("Negocio borrado"); after && after(); } } : {});
+}
+
+function logForm(ctx = {}, after) {
+  // ctx: {company_id, company_label, canal, contacts:[], deals:[]}
+  const fields = [
+    ...(ctx.company_id ? [] : [{ k: "company_id", l: "Empresa", t: "company", full: true }]),
+    { k: "canal", l: "Tipo", t: "select", opts: CANALES, def: ctx.canal || "llamada" },
+    { k: "fecha", l: "Fecha", t: "date", def: hoy() },
+    { k: "resultado", l: "Resultado (1 línea)", req: true, full: true },
+    { k: "cuerpo", l: "Detalle", t: "area", full: true },
+    ...(ctx.contacts?.length ? [{ k: "contact_id", l: "Contacto", t: "select", opts: [["", "—"], ...ctx.contacts.map(c => [c.id, c.nombre])] }] : []),
+    ...(ctx.deals?.length ? [{ k: "deal_id", l: "Negocio", t: "select", opts: [["", "—"], ...ctx.deals.map(d => [d.id, d.nombre])] }] : []),
+    { k: "siguiente_paso", l: "Siguiente paso (crea tarea)", full: true },
+    { k: "fecha_siguiente", l: "Fecha del siguiente paso", t: "date" },
+    { k: "owner", l: "Quién", t: "select", opts: S.users.map(u => [u.nombre, u.nombre]), def: S.me.nombre },
+  ];
+  modal("Registrar actividad", fields, {}, async v => {
+    const company_id = ctx.company_id || v.company_id;
+    if (!company_id) throw new Error("Elige la empresa");
+    await q(sb.from("interactions").insert({ ...v, company_id }));
+    if (v.siguiente_paso) await q(sb.from("tasks").insert({ titulo: v.siguiente_paso, vence: v.fecha_siguiente || addDays(hoy(), 7), owner: v.owner, company_id, deal_id: v.deal_id, contact_id: v.contact_id, created_by: S.me.nombre }));
+    toast("Actividad registrada"); after && after();
+  });
+}
+
+function taskForm(t = {}, after) {
+  const fields = [
+    { k: "titulo", l: "Tarea", req: true, full: true },
+    ...(t.company_id ? [] : [{ k: "company_id", l: "Empresa", t: "company", full: true }]),
+    { k: "vence", l: "Vence", t: "date", def: hoy() },
+    { k: "owner", l: "Responsable", t: "select", opts: S.users.map(u => [u.nombre, u.nombre]), def: S.me.nombre },
+    { k: "notas", l: "Notas", t: "area", full: true },
+  ];
+  modal(t.id ? "Editar tarea" : "Nueva tarea", fields, t, async v => {
+    if (!v.company_id) delete v.company_id;
+    if (t.id) await q(sb.from("tasks").update(v).eq("id", t.id));
+    else await q(sb.from("tasks").insert({ ...v, company_id: v.company_id || t.company_id || null, deal_id: t.deal_id || null, created_by: S.me.nombre }));
+    toast("Tarea guardada"); after && after();
+  }, t.id ? { onDelete: async () => { await q(sb.from("tasks").delete().eq("id", t.id)); after && after(); } } : {});
+}
+
+async function toggleTask(id, done) { await q(sb.from("tasks").update({ completada: done }).eq("id", id)); toast(done ? "Tarea completada" : "Tarea reabierta"); }
+
+// ───────────────────────── vista: pipeline ─────────────────────────
+async function vPipeline() {
+  const owner = sessionStorage.getItem("pl_owner") ?? "";
+  const verCerr = sessionStorage.getItem("pl_closed") === "1";
+  let qq = sb.from("deals").select("id,nombre,monto,owner,fecha_cierre,stage_id,company_id,closed_at,companies(razon_social,nombre_comercial)");
+  if (owner) qq = qq.eq("owner", owner);
+  const [deals, ganados] = await Promise.all([
+    q(qq.or(`closed_at.is.null,closed_at.gte.${addDays(hoy(), -90)}`)),
+    q((owner ? sb.from("deals").select("monto,stage_id,closed_at").eq("owner", owner) : sb.from("deals").select("monto,stage_id,closed_at")).gte("closed_at", hoy().slice(0, 4) + "-01-01")),
+  ]);
+  const st = Object.fromEntries(S.stages.map(s => [s.id, s]));
+  const abiertos = deals.filter(d => st[d.stage_id]?.tipo === "abierta" || !st[d.stage_id]);
+  const sum = a => a.reduce((x, d) => x + (+d.monto || 0), 0);
+  const pond = abiertos.reduce((x, d) => x + (+d.monto || 0) * (st[d.stage_id]?.probabilidad ?? 0) / 100, 0);
+  const ganadoAnio = sum(ganados.filter(d => st[d.stage_id]?.tipo === "ganada"));
+  const cols = S.stages.filter(s => s.activo && (verCerr || s.tipo === "abierta"));
+  const huerf = deals.filter(d => !st[d.stage_id] || !st[d.stage_id].activo);
+  app.innerHTML = `
+    <div class="bar"><h1>Pipeline</h1><span class="grow"></span>
+      <select id="own">${ownerOpts(owner, "Todos")}</select>
+      <label class="sub"><input type="checkbox" id="cerr" style="width:auto" ${verCerr ? "checked" : ""}> Ver cerrados (90 días)</label>
+      <button class="pri" id="nuevo">+ Negocio</button></div>
+    <div class="cards">
+      <div class="card"><div class="l">Pipeline abierto</div><div class="v">${money(sum(abiertos))}</div><div class="sub">${abiertos.length} negocios</div></div>
+      <div class="card"><div class="l">Ponderado (× probabilidad)</div><div class="v">${money(pond)}</div></div>
+      <div class="card"><div class="l">Ganado ${hoy().slice(0, 4)}</div><div class="v">${money(ganadoAnio)}</div></div>
+      <div class="card"><div class="l">Cierre vencido</div><div class="v ${abiertos.some(d => d.fecha_cierre && d.fecha_cierre < hoy()) ? "bad" : ""}">${abiertos.filter(d => d.fecha_cierre && d.fecha_cierre < hoy()).length}</div><div class="sub">fecha de cierre ya pasó</div></div>
+    </div>
+    ${huerf.length ? `<div class="warnbox">${huerf.length} negocio(s) en etapas desactivadas: ${huerf.map(d => esc(d.nombre)).join(", ")}</div>` : ""}
+    <div class="board">${cols.map(s => { const ds = deals.filter(d => d.stage_id === s.id);
+      return `<div class="col" data-stage="${s.id}"><h3><span>${esc(s.nombre)}</span><span class="mut">${ds.length}</span></h3>
+        <div class="tot">${money(sum(ds))}${s.tipo === "abierta" ? ` · ${s.probabilidad}%` : ""}</div>
+        ${ds.sort((a, b) => (+b.monto || 0) - (+a.monto || 0)).map(d => `<div class="deal ${s.tipo === "abierta" && d.fecha_cierre && d.fecha_cierre < hoy() ? "late" : ""}" draggable="true" data-id="${d.id}">
+          <div class="t">${esc(d.nombre)}</div><div class="c">${esc(nombreEmp(d.companies))}</div>
+          <div class="m"><b>${money(d.monto)}</b><span class="f">${esc(d.owner || "")}${d.fecha_cierre ? " · " + fmtF(d.fecha_cierre) : ""}</span></div></div>`).join("") || `<div class="empty" style="padding:4px">—</div>`}
+      </div>`; }).join("")}</div>`;
+  $("#own").onchange = e => { sessionStorage.setItem("pl_owner", e.target.value); vPipeline(); };
+  $("#cerr").onchange = e => { sessionStorage.setItem("pl_closed", e.target.checked ? "1" : "0"); vPipeline(); };
+  $("#nuevo").onclick = () => dealForm({}, vPipeline);
+  const byId = Object.fromEntries(deals.map(d => [d.id, d]));
+  app.querySelectorAll(".deal").forEach(el => {
+    el.onclick = () => { const d = byId[el.dataset.id]; dealForm({ ...d }, vPipeline); };
+    el.ondragstart = e => e.dataTransfer.setData("text/plain", el.dataset.id);
+  });
+  app.querySelectorAll(".col").forEach(col => {
+    col.ondragover = e => { e.preventDefault(); col.classList.add("drop"); };
+    col.ondragleave = () => col.classList.remove("drop");
+    col.ondrop = async e => { e.preventDefault(); col.classList.remove("drop");
+      const id = e.dataTransfer.getData("text/plain"); const sid = +col.dataset.stage;
+      if (!id || byId[id].stage_id === sid) return;
+      const s = st[sid];
+      const upd = { stage_id: sid };
+      if (s.tipo === "perdida") { const m = prompt("Motivo de pérdida:"); if (m === null) return; upd.motivo_perdida = m; }
+      await q(sb.from("deals").update(upd).eq("id", id)); toast(`Movido a ${s.nombre}`); vPipeline(); };
+  });
+}
+
+// ───────────────────────── vista: empresas ─────────────────────────
+async function vEmpresas() {
+  const f = JSON.parse(sessionStorage.getItem("emp_f") || '{"est":"activas","own":"","t":""}');
+  app.innerHTML = `<div class="bar"><h1>Empresas</h1><span class="grow"></span>
+      <input id="t" placeholder="Buscar nombre…" value="${esc(f.t)}" style="min-width:200px">
+      <select id="est">${[["activas", "Activas (clientes + en contacto + con dueño)"], ["cliente", "Clientes"], ["en_contacto", "En contacto"], ["calificado", "Prospectos calificados (score)"], ["todas", "Todas"], ["blacklist", "Blacklist"]].map(([v, l]) => `<option value="${v}" ${v === f.est ? "selected" : ""}>${l}</option>`).join("")}</select>
+      <select id="own">${ownerOpts(f.own, "Cualquier dueño")}</select>
+      <button id="csv" class="hide-m">CSV</button><button class="pri" id="nueva">+ Empresa</button></div>
+    <div id="lista"><div class="empty">Cargando…</div></div>`;
+  let rows = [];
+  const load = async () => {
+    sessionStorage.setItem("emp_f", JSON.stringify(f));
+    let qq = sb.from("companies").select("id,razon_social,nombre_comercial,estatus,owner,segmento,municipio,estado,ultima_actividad,score,telefono");
+    if (f.est === "activas") qq = qq.or("estatus.in.(cliente,en_contacto),owner.not.is.null").neq("estatus", "blacklist");
+    else if (f.est !== "todas") qq = qq.eq("estatus", f.est);
+    if (f.own) qq = qq.eq("owner", f.own);
+    if (f.t) { const t = f.t.replace(/[%,()]/g, " "); qq = qq.or(`razon_social.ilike.%${t}%,nombre_comercial.ilike.%${t}%`); }
+    qq = f.est === "calificado" ? qq.order("score", { ascending: false, nullsFirst: false }) : qq.order("ultima_actividad", { ascending: false, nullsFirst: false }).order("razon_social");
+    rows = await q(qq.limit(300));
+    $("#lista").innerHTML = rows.length ? `<div class="tbl"><table><thead><tr><th>Empresa</th><th>Estatus</th><th>Dueño</th><th class="hide-m">Segmento</th><th class="hide-m">Ubicación</th><th>Últ. actividad</th>${f.est === "calificado" ? '<th class="n">Score</th>' : ""}</tr></thead><tbody>
+      ${rows.map(r => `<tr class="click" data-id="${r.id}"><td><b>${esc(nombreEmp(r))}</b>${r.nombre_comercial ? `<div class="sub">${esc(r.razon_social)}</div>` : ""}</td><td>${estPill(r.estatus)}</td><td>${esc(r.owner || "")}</td>
+        <td class="hide-m">${esc((r.segmento || "").replace(/_/g, " "))}</td><td class="hide-m">${esc([r.municipio, r.estado].filter(Boolean).join(", "))}</td><td>${fmtF(r.ultima_actividad)}</td>${f.est === "calificado" ? `<td class="n">${r.score ?? ""}</td>` : ""}</tr>`).join("")}
+      </tbody></table></div><p class="sub">${rows.length}${rows.length === 300 ? "+ (afina la búsqueda)" : ""} empresas</p>` : `<div class="empty">Sin resultados.</div>`;
+    $("#lista").querySelectorAll("tr[data-id]").forEach(tr => tr.onclick = () => location.hash = "#/empresa/" + tr.dataset.id);
+  };
+  $("#t").oninput = debounce(e => { f.t = e.target.value.trim(); load(); }, 300);
+  $("#est").onchange = e => { f.est = e.target.value; load(); };
+  $("#own").onchange = e => { f.own = e.target.value; load(); };
+  $("#csv").onclick = () => downloadCSV(`empresas_${hoy()}.csv`, [["razon_social", "nombre_comercial", "estatus", "owner", "segmento", "municipio", "estado", "telefono", "ultima_actividad", "score"], ...rows.map(r => [r.razon_social, r.nombre_comercial, r.estatus, r.owner, r.segmento, r.municipio, r.estado, r.telefono, r.ultima_actividad, r.score])]);
+  $("#nueva").onclick = () => companyForm({}, id => location.hash = "#/empresa/" + id);
+  await load();
+}
+
+function companyForm(c = {}, after) {
+  const fields = [
+    { k: "razon_social", l: "Razón social", req: true, full: true },
+    { k: "nombre_comercial", l: "Nombre comercial", full: true },
+    { k: "estatus", l: "Estatus", t: "select", opts: ESTATUS.filter(e => e[0] !== "blacklist" || S.me.rol === "admin"), def: "en_contacto" },
+    { k: "owner", l: "Dueño de la cuenta", t: "select", opts: [["", "—"], ...S.users.map(u => [u.nombre, u.nombre])], def: S.me.nombre },
+    { k: "telefono", l: "Teléfono" }, { k: "sitio_web", l: "Sitio web" },
+    { k: "municipio", l: "Municipio" }, { k: "estado", l: "Estado" },
+    { k: "segmento", l: "Segmento", t: "select", opts: [["", "—"], ["automotriz_tier23", "Automotriz Tier 2/3"], ["alimentos_agroexport", "Alimentos / agroexport"], ["quimica_farma", "Química / farma"], ["piel_calzado", "Piel / calzado"], ["electro_metal", "Electro / metal"], ["vidrio", "Vidrio"], ["globos", "Globos"], ["otro", "Otro"]] },
+    { k: "potencial_anual", l: "Potencial (MXN / año)", t: "num" },
+    { k: "notas", l: "Notas", t: "area", full: true },
+  ];
+  const ov = modal(c.id ? "Editar empresa" : "Nueva empresa", fields, c, async v => {
+    if (c.id) { await q(sb.from("companies").update(v).eq("id", c.id)); toast("Guardado"); after && after(c.id); }
+    else { const [n] = await q(sb.from("companies").insert({ ...v, fuente: "crm" }).select("id")); toast("Empresa creada"); after && after(n.id); }
+  }, {
+    onDelete: c.id && S.me.rol === "admin" ? async () => { await q(sb.from("companies").delete().eq("id", c.id)); location.hash = "#/empresas"; } : null,
+    onInput: c.id ? null : ov2 => { // dedup sagrado: avisar si ya existe (incl. blacklist)
+      const inp = $("#fm_razon_social", ov2), msg = $(".msg", ov2);
+      inp.addEventListener("input", debounce(async () => {
+        const t = inp.value.trim().replace(/\b(s\.?\s*a\.?|de|c\.?\s*v\.?|s\.?\s*de\s*r\.?\s*l\.?)\b/gi, " ").replace(/[%,().]/g, " ").trim().split(/\s+/).slice(0, 2).join(" ");
+        if (t.length < 3) { msg.innerHTML = ""; return; }
+        const ex = await q(sb.from("companies").select("id,razon_social,nombre_comercial,estatus").or(`razon_social.ilike.%${t}%,nombre_comercial.ilike.%${t}%`).limit(5));
+        msg.innerHTML = ex.length ? `<div class="warnbox">¿Ya existe? ${ex.map(e => `<a href="#/empresa/${e.id}">${esc(nombreEmp(e))}</a> ${estPill(e.estatus)}`).join(" · ")}</div>` : "";
+        msg.querySelectorAll("a").forEach(a => a.onclick = () => ov2.remove());
+      }, 350));
+    },
+  });
+}
+
+// ───────────────────────── vista: empresa ─────────────────────────
+async function vEmpresa(id) {
+  const [c, contacts, deals, acts, tasks, signals] = await Promise.all([
+    q(sb.from("companies").select("*").eq("id", id).single()),
+    q(sb.from("contacts").select("*").eq("company_id", id).order("created_at")),
+    q(sb.from("deals").select("*").eq("company_id", id).order("created_at", { ascending: false })),
+    q(sb.from("interactions").select("*, contacts(nombre)").eq("company_id", id).order("fecha", { ascending: false, nullsFirst: false }).order("created_at", { ascending: false }).limit(200)),
+    q(sb.from("tasks").select("*").eq("company_id", id).order("completada").order("vence")),
+    q(sb.from("signals").select("*").eq("company_id", id).order("fecha", { ascending: false })),
+  ]);
+  const st = Object.fromEntries(S.stages.map(s => [s.id, s]));
+  const reload = () => vEmpresa(id);
+  const bl = c.estatus === "blacklist";
+  app.innerHTML = `
+    <div class="bar"><a href="#/empresas" class="sub">← Empresas</a></div>
+    ${bl ? `<div class="banner">BLACKLIST — moroso. No se le vende ni se cotiza.</div>` : ""}
+    <div class="bar"><div><h1>${esc(nombreEmp(c))}</h1>${c.nombre_comercial ? `<div class="sub">${esc(c.razon_social)}</div>` : ""}</div>
+      ${estPill(c.estatus)}<span class="grow"></span><button id="edit">Editar</button></div>
+    <div class="grid2">
+      <div>
+        <div class="panel"><h2>Actividad</h2>
+          <div class="logbar">${CANALES.map(([k, l]) => `<button class="sm" data-canal="${k}">+ ${l}</button>`).join("")}</div>
+          ${acts.length ? `<ul class="tl">${acts.map(a => `<li><div class="h">${fmtF(a.fecha)} · ${esc(canalL(a.canal))} · ${esc(a.owner || "")}${a.contacts ? " · con " + esc(a.contacts.nombre) : ""}</div>
+            <div class="r">${esc(a.resultado || "")}</div>${cuerpoSinResultado(a) ? `<div class="b">${esc(cuerpoSinResultado(a))}</div>` : ""}
+            ${a.siguiente_paso ? `<div class="sub">→ ${esc(a.siguiente_paso)}${a.fecha_siguiente ? " (" + fmtF(a.fecha_siguiente) + ")" : ""}</div>` : ""}</li>`).join("")}</ul>` : `<div class="empty">Sin actividad registrada.</div>`}
+        </div>
+      </div>
+      <div>
+        <div class="panel"><h2>Datos</h2><div class="kv">
+          <span class="k">Dueño</span><span>${esc(c.owner || "—")}</span>
+          ${c.telefono ? `<span class="k">Teléfono</span><span class="links"><a href="${telLink(c.telefono)}">${esc(c.telefono)}</a></span>` : ""}
+          ${c.sitio_web ? `<span class="k">Web</span><span><a href="${esc(/^https?:/.test(c.sitio_web) ? c.sitio_web : "https://" + c.sitio_web)}" target="_blank" rel="noopener">${esc(c.sitio_web.replace(/^https?:\/\//, ""))}</a></span>` : ""}
+          ${c.municipio || c.estado ? `<span class="k">Ubicación</span><span>${esc([c.municipio, c.estado].filter(Boolean).join(", "))}${c.distancia_km ? ` · ${Math.round(c.distancia_km)} km` : ""}</span>` : ""}
+          ${c.segmento ? `<span class="k">Segmento</span><span>${esc(c.segmento.replace(/_/g, " "))}</span>` : ""}
+          ${c.empleados_estrato ? `<span class="k">Empleados</span><span>${esc(c.empleados_estrato)}</span>` : ""}
+          ${c.potencial_anual ? `<span class="k">Potencial</span><span>${money(c.potencial_anual)}/año</span>` : ""}
+          ${c.score != null ? `<span class="k">Score</span><span>${c.score}</span>` : ""}
+        </div>${c.notas ? `<div class="b" style="white-space:pre-wrap;margin-top:8px;font-size:13.5px">${esc(c.notas)}</div>` : ""}</div>
+
+        <div class="panel"><h2>Negocios <button class="sm" id="addDeal" ${bl ? "disabled" : ""}>+ Negocio</button></h2>
+          ${deals.length ? deals.map(d => `<div class="row click" data-deal="${d.id}" style="cursor:pointer"><div><b>${esc(d.nombre)}</b><div class="sub">${esc(st[d.stage_id]?.nombre || "—")} · ${esc(d.owner || "")}${d.fecha_cierre ? " · cierre " + fmtF(d.fecha_cierre) : ""}</div></div><div class="n"><b>${money(d.monto)}</b></div></div>`).join("") : `<div class="empty">Sin negocios.</div>`}</div>
+
+        <div class="panel"><h2>Tareas <button class="sm" id="addTask">+ Tarea</button></h2>
+          ${tasks.length ? tasks.map(t => `<div class="task ${t.completada ? "done" : ""}"><input type="checkbox" data-t="${t.id}" ${t.completada ? "checked" : ""}>
+            <div style="flex:1"><div class="tt">${esc(t.titulo)}</div><div class="sub ${!t.completada && t.vence && t.vence < hoy() ? "late" : ""}">${fmtF(t.vence)} · ${esc(t.owner || "")}</div></div>
+            <a href="#" data-te="${t.id}" class="sub">editar</a></div>`).join("") : `<div class="empty">Sin tareas.</div>`}</div>
+
+        <div class="panel"><h2>Contactos <button class="sm" id="addCont">+ Contacto</button></h2>
+          ${contacts.length ? contacts.map(ct => `<div class="row"><div><b>${esc(ct.nombre || "—")}</b>${ct.puesto ? ` <span class="sub">${esc(ct.puesto)}</span>` : ""}
+            <div class="links">${ct.telefono ? `<a href="${telLink(ct.telefono)}">☎ ${esc(ct.telefono)}</a>` : ""}${ct.whatsapp || ct.telefono ? `<a href="${waLink(ct.whatsapp || ct.telefono)}" target="_blank" rel="noopener">WhatsApp</a>` : ""}${ct.email ? `<a href="mailto:${esc(ct.email)}">${esc(ct.email)}</a>` : ""}</div></div>
+            <a href="#" data-ce="${ct.id}" class="sub">editar</a></div>`).join("") : `<div class="empty">Sin contactos.</div>`}</div>
+
+        ${signals.length ? `<div class="panel"><h2>Señales (prospección)</h2>${signals.map(s => `<div class="row"><div><span class="pill">${esc(s.tipo)}</span> ${esc(s.detalle || "")}${s.url ? ` <a href="${esc(s.url)}" target="_blank" rel="noopener">fuente</a>` : ""}</div></div>`).join("")}</div>` : ""}
+      </div>
+    </div>`;
+  $("#edit").onclick = () => companyForm(c, reload);
+  const ctx = { company_id: id, contacts, deals: deals.filter(d => st[d.stage_id]?.tipo === "abierta") };
+  app.querySelectorAll("[data-canal]").forEach(b => b.onclick = () => logForm({ ...ctx, canal: b.dataset.canal }, reload));
+  $("#addDeal").onclick = () => dealForm({ company_id: id, nombre: nombreEmp(c) + " — " }, reload);
+  app.querySelectorAll("[data-deal]").forEach(el => el.onclick = () => dealForm({ ...deals.find(d => d.id === el.dataset.deal) }, reload));
+  $("#addTask").onclick = () => taskForm({ company_id: id }, reload);
+  app.querySelectorAll("[data-t]").forEach(cb => cb.onchange = async () => { await toggleTask(cb.dataset.t, cb.checked); reload(); });
+  app.querySelectorAll("[data-te]").forEach(a => a.onclick = e => { e.preventDefault(); taskForm({ ...tasks.find(t => t.id === a.dataset.te) }, reload); });
+  const contactForm = (ct = {}) => modal(ct.id ? "Editar contacto" : "Nuevo contacto", [
+    { k: "nombre", l: "Nombre", req: true, full: true }, { k: "puesto", l: "Puesto" }, { k: "email", l: "Correo", t: "email" },
+    { k: "telefono", l: "Teléfono" }, { k: "whatsapp", l: "WhatsApp (si es distinto)" }, { k: "notas", l: "Notas", t: "area", full: true },
+  ], ct, async v => {
+    if (ct.id) await q(sb.from("contacts").update(v).eq("id", ct.id));
+    else await q(sb.from("contacts").insert({ ...v, company_id: id, fuente: "crm", owner: S.me.nombre }));
+    toast("Contacto guardado"); reload();
+  }, ct.id ? { onDelete: async () => { await q(sb.from("contacts").delete().eq("id", ct.id)); reload(); } } : {});
+  $("#addCont").onclick = () => contactForm();
+  app.querySelectorAll("[data-ce]").forEach(a => a.onclick = e => { e.preventDefault(); contactForm({ ...contacts.find(x => x.id === a.dataset.ce) }); });
+}
+
+// ───────────────────────── vista: tareas ─────────────────────────
+async function vTareas() {
+  const own = sessionStorage.getItem("t_owner") ?? S.me.nombre;
+  let qq = sb.from("tasks").select("*, companies(id,razon_social,nombre_comercial)").eq("completada", false).order("vence", { nullsFirst: false });
+  if (own) qq = qq.eq("owner", own);
+  const [ts, hechas] = await Promise.all([q(qq.limit(500)),
+    q((own ? sb.from("tasks").select("*, companies(id,razon_social,nombre_comercial)").eq("owner", own) : sb.from("tasks").select("*, companies(id,razon_social,nombre_comercial)")).eq("completada", true).gte("completed_at", addDays(hoy(), -7)).order("completed_at", { ascending: false }).limit(50))]);
+  const h = hoy(), sem = addDays(h, 7);
+  const grupos = [["Vencidas", t => t.vence && t.vence < h, "late"], ["Hoy", t => t.vence === h], ["Próximos 7 días", t => t.vence > h && t.vence <= sem], ["Después", t => t.vence > sem], ["Sin fecha", t => !t.vence]];
+  const item = t => `<div class="task ${t.completada ? "done" : ""}"><input type="checkbox" data-t="${t.id}" ${t.completada ? "checked" : ""}><div style="flex:1"><div class="tt">${esc(t.titulo)}</div>
+    <div class="sub">${t.companies ? `<a href="#/empresa/${t.companies.id}">${esc(nombreEmp(t.companies))}</a> · ` : ""}${fmtF(t.vence)}${own ? "" : " · " + esc(t.owner || "")}</div></div><a href="#" data-te="${t.id}" class="sub">editar</a></div>`;
+  app.innerHTML = `<div class="bar"><h1>Tareas</h1><span class="grow"></span><select id="own">${ownerOpts(own, "Todo el equipo")}</select><button class="pri" id="nueva">+ Tarea</button></div>
+    ${grupos.map(([l, fn, cls]) => { const g = ts.filter(fn); return g.length ? `<div class="panel"><h2><span class="${cls || ""}">${l} (${g.length})</span></h2>${g.map(item).join("")}</div>` : ""; }).join("") || `<div class="panel"><div class="empty">Sin tareas pendientes. 👌</div></div>`}
+    ${hechas.length ? `<div class="panel"><h2 class="mut">Completadas últimos 7 días (${hechas.length})</h2>${hechas.map(item).join("")}</div>` : ""}`;
+  $("#own").onchange = e => { sessionStorage.setItem("t_owner", e.target.value); vTareas(); };
+  $("#nueva").onclick = () => taskForm({}, vTareas);
+  const all = [...ts, ...hechas];
+  app.querySelectorAll("[data-t]").forEach(cb => cb.onchange = async () => { await toggleTask(cb.dataset.t, cb.checked); vTareas(); });
+  app.querySelectorAll("[data-te]").forEach(a => a.onclick = e => { e.preventDefault(); taskForm({ ...all.find(t => t.id === a.dataset.te) }, vTareas); });
+}
+
+// ───────────────────────── vista: actividad ─────────────────────────
+async function vActividad() {
+  const dias = +(sessionStorage.getItem("a_dias") || 7);
+  const own = sessionStorage.getItem("a_owner") || "";
+  const desde = addDays(hoy(), -dias + 1);
+  let qq = sb.from("interactions").select("id,fecha,canal,owner,resultado,cuerpo,siguiente_paso,companies(id,razon_social,nombre_comercial)").gte("fecha", desde).order("fecha", { ascending: false }).order("created_at", { ascending: false });
+  if (own) qq = qq.eq("owner", own);
+  const acts = await q(qq.limit(1000));
+  const owners = [...new Set(acts.map(a => a.owner || "—"))].sort();
+  const cnt = (o, c) => acts.filter(a => (a.owner || "—") === o && (!c || a.canal === c)).length;
+  const empresasToc = o => new Set(acts.filter(a => (a.owner || "—") === o).map(a => a.companies?.id)).size;
+  app.innerHTML = `<div class="bar"><h1>Actividad</h1><span class="grow"></span>
+      <select id="dias">${[[7, "Últimos 7 días"], [30, "Últimos 30 días"], [90, "Últimos 90 días"]].map(([v, l]) => `<option value="${v}" ${v === dias ? "selected" : ""}>${l}</option>`).join("")}</select>
+      <select id="own">${ownerOpts(own, "Todo el equipo")}</select>
+      <button id="csv" class="hide-m">CSV</button><button class="pri" id="log">+ Registrar actividad</button></div>
+    <div class="panel"><h2>Resumen por persona</h2>${acts.length ? `<div class="tbl"><table><thead><tr><th>Quién</th>${CANALES.map(([, l]) => `<th class="n">${l}</th>`).join("")}<th class="n">Total</th><th class="n">Empresas</th></tr></thead><tbody>
+      ${owners.map(o => `<tr><td><b>${esc(o)}</b></td>${CANALES.map(([k]) => `<td class="n">${cnt(o, k) || ""}</td>`).join("")}<td class="n"><b>${cnt(o)}</b></td><td class="n">${empresasToc(o)}</td></tr>`).join("")}
+      </tbody></table></div>` : `<div class="empty">Sin actividad en el periodo.</div>`}</div>
+    <div class="panel"><h2>Bitácora</h2>${acts.length ? `<ul class="tl">${acts.slice(0, 300).map(a => `<li><div class="h">${fmtF(a.fecha)} · ${esc(canalL(a.canal))} · ${esc(a.owner || "")} · ${a.companies ? `<a href="#/empresa/${a.companies.id}">${esc(nombreEmp(a.companies))}</a>` : "—"}</div>
+      <div class="r">${esc(a.resultado || "")}</div>${a.siguiente_paso ? `<div class="sub">→ ${esc(a.siguiente_paso)}</div>` : ""}</li>`).join("")}</ul>` : `<div class="empty">—</div>`}</div>`;
+  $("#dias").onchange = e => { sessionStorage.setItem("a_dias", e.target.value); vActividad(); };
+  $("#own").onchange = e => { sessionStorage.setItem("a_owner", e.target.value); vActividad(); };
+  $("#log").onclick = () => logForm({}, vActividad);
+  $("#csv").onclick = () => downloadCSV(`actividad_${hoy()}.csv`, [["fecha", "canal", "owner", "empresa", "resultado", "detalle", "siguiente_paso"], ...acts.map(a => [a.fecha, a.canal, a.owner, nombreEmp(a.companies), a.resultado, a.cuerpo, a.siguiente_paso])]);
+}
+</script>
+</body>
+</html>
